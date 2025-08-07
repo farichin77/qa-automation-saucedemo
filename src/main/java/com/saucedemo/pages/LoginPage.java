@@ -24,7 +24,7 @@ public class LoginPage extends BasePage {
     }
 
     public void navigateTo() {
-        driver.get("https://www.saucedemo.com");
+        getDriver().get("https://www.saucedemo.com");
     }
 
     public void enterUsername(String username) {

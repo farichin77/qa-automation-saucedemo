@@ -41,7 +41,7 @@ public class CartPage extends BasePage {
                 ExpectedConditions.presenceOfElementLocated(By.cssSelector(".cart_item")),
                 ExpectedConditions.presenceOfElementLocated(By.cssSelector(".cart_list"))
             ));
-            return driver.findElements(By.cssSelector(".cart_item")).size();
+            return getDriver().findElements(By.cssSelector(".cart_item")).size();
         } catch (Exception e) {
             // If no items found, return 0
             return 0;
@@ -76,7 +76,7 @@ public class CartPage extends BasePage {
         wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector(".cart_item")));
         
         // Get all remove buttons that are currently visible
-        List<WebElement> buttons = driver.findElements(By.cssSelector("button[id^='remove-']"));
+        List<WebElement> buttons = getDriver().findElements(By.cssSelector("button[id^='remove-']"));
         
         if (index >= 0 && index < buttons.size()) {
             WebElement buttonToClick = buttons.get(index);
