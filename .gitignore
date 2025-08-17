@@ -1,5 +1,18 @@
+# Ignore build, test, and IDE files
+/target/
+*.log
+allure-results/
+*.iml
+.idea/
+*.class
+*.jar
+*.bat
+*.sh
+*.pyc
+.DS_Store
+.env
+
 # Maven
-target/
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup
@@ -7,10 +20,7 @@ pom.xml.next
 release.properties
 
 # IntelliJ IDEA
-.idea/
 *.iws
-*.iml
-*.ipr
 
 # Eclipse
 .settings/
@@ -21,15 +31,3 @@ release.properties
 # VS Code
 .vscode/
 .settings/
-
-# Allure
-.allure/
-allure-results/
-
-# Logs
-*.log
-logs/
-
-# OS-specific files
-.DS_Store
-Thumbs.db

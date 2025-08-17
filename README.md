@@ -62,9 +62,10 @@ src/
 
 1. Clone the repository
 2. Navigate to the project root directory
-3. Run the tests using Maven:
+3. Run the tests using Maven and alurre report:
    ```
-   mvn clean test
+   .\run-tests.bat
+
    ```
 
 ## Configuration

@@ -10,20 +10,15 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 public class CheckoutTest extends BaseTest {
-    private CheckoutPage checkoutPage;
 
-    @BeforeMethod
-    public void loginAndNavigateToCheckout() {
+    @Test
+    public void testSuccessfulCheckout() {
         LoginPage loginPage = new LoginPage(getDriver());
         loginPage.navigateTo();
         InventoryPage inventoryPage = loginPage.login("standard_user", "secret_sauce");
         inventoryPage.addProductToCart(0);
         CartPage cartPage = inventoryPage.navigateToCart();
-        checkoutPage = cartPage.proceedToCheckout();
-    }
-
-    @Test
-    public void testSuccessfulCheckout() {
+        CheckoutPage checkoutPage = cartPage.proceedToCheckout();
         Assert.assertTrue(getDriver().getCurrentUrl().contains("checkout-step-one.html"), "Should be on checkout step one");
         
         checkoutPage.fillCheckoutInfo("John", "Doe", "12345");
@@ -37,6 +32,12 @@ public class CheckoutTest extends BaseTest {
 
     @Test
     public void testEmptyFirstName() {
+        LoginPage loginPage = new LoginPage(getDriver());
+        loginPage.navigateTo();
+        InventoryPage inventoryPage = loginPage.login("standard_user", "secret_sauce");
+        inventoryPage.addProductToCart(0);
+        CartPage cartPage = inventoryPage.navigateToCart();
+        CheckoutPage checkoutPage = cartPage.proceedToCheckout();
         checkoutPage.fillCheckoutInfo("", "Doe", "12345");
         String errorMessage = checkoutPage.getErrorMessage();
         Assert.assertTrue(errorMessage.contains("First Name is required"), "Wrong error message for empty first name");
@@ -46,6 +47,12 @@ public class CheckoutTest extends BaseTest {
 
     @Test
     public void testEmptyLastName() {
+        LoginPage loginPage = new LoginPage(getDriver());
+        loginPage.navigateTo();
+        InventoryPage inventoryPage = loginPage.login("standard_user", "secret_sauce");
+        inventoryPage.addProductToCart(0);
+        CartPage cartPage = inventoryPage.navigateToCart();
+        CheckoutPage checkoutPage = cartPage.proceedToCheckout();
         checkoutPage.fillCheckoutInfo("John", "", "12345");
         String errorMessage = checkoutPage.getErrorMessage();
         Assert.assertTrue(errorMessage.contains("Last Name is required"), "Wrong error message for empty last name");
@@ -55,6 +62,12 @@ public class CheckoutTest extends BaseTest {
 
     @Test
     public void testEmptyPostalCode() {
+        LoginPage loginPage = new LoginPage(getDriver());
+        loginPage.navigateTo();
+        InventoryPage inventoryPage = loginPage.login("standard_user", "secret_sauce");
+        inventoryPage.addProductToCart(0);
+        CartPage cartPage = inventoryPage.navigateToCart();
+        CheckoutPage checkoutPage = cartPage.proceedToCheckout();
         checkoutPage.fillCheckoutInfo("John", "Doe", "");
         String errorMessage = checkoutPage.getErrorMessage();
         Assert.assertTrue(errorMessage.contains("Postal Code is required"), "Wrong error message for empty postal code");
@@ -65,6 +78,12 @@ public class CheckoutTest extends BaseTest {
 
     @Test
     public void testCompleteCheckoutFlow() {
+        LoginPage loginPage = new LoginPage(getDriver());
+        loginPage.navigateTo();
+        InventoryPage inventoryPage = loginPage.login("standard_user", "secret_sauce");
+        inventoryPage.addProductToCart(0);
+        CartPage cartPage = inventoryPage.navigateToCart();
+        CheckoutPage checkoutPage = cartPage.proceedToCheckout();
         checkoutPage.fillCheckoutInfo("John", "Doe", "12345");
         checkoutPage.completeCheckout();
         Assert.assertTrue(getDriver().getCurrentUrl().contains("checkout-complete.html"));

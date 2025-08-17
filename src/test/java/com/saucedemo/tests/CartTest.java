@@ -9,20 +9,15 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 public class CartTest extends BaseTest {
-    private InventoryPage inventoryPage;
-    private CartPage cartPage;
-
-    @BeforeMethod
-    public void loginAndAddToCart() {
-        LoginPage loginPage = new LoginPage(getDriver());
-        loginPage.navigateTo();
-        inventoryPage = loginPage.login("standard_user", "secret_sauce");
-        inventoryPage.addProductToCart(0);
-        cartPage = inventoryPage.navigateToCart();
-    }
 
     @Test
     public void testCartItemCount() {
+        LoginPage loginPage = new LoginPage(getDriver());
+        loginPage.navigateTo();
+        InventoryPage inventoryPage = loginPage.login("standard_user", "secret_sauce");
+        inventoryPage.addProductToCart(0);
+        CartPage cartPage = inventoryPage.navigateToCart();
+
         Assert.assertEquals(cartPage.getNumberOfItems(), 1, "Incorrect number of items in cart");
         Assert.assertTrue(getDriver().findElement(By.id("checkout")).isDisplayed(), "Checkout button should be visible");
         Assert.assertTrue(getDriver().getCurrentUrl().contains("cart.html"), "Should be on cart page");
@@ -30,11 +25,17 @@ public class CartTest extends BaseTest {
 
     @Test
     public void testRemoveFromCart() {
+        LoginPage loginPage = new LoginPage(getDriver());
+        loginPage.navigateTo();
+        InventoryPage inventoryPage = loginPage.login("standard_user", "secret_sauce");
+        inventoryPage.addProductToCart(0);
+        CartPage cartPage = inventoryPage.navigateToCart();
+
         String itemName = cartPage.getItemName(0);
         Assert.assertNotNull(itemName, "Item name should be present before removal");
-        
+
         cartPage.removeItem(0);
-        
+
         Assert.assertEquals(cartPage.getNumberOfItems(), 0, "Item not removed from cart");
         Assert.assertTrue(getDriver().findElements(By.cssSelector(".cart_item")).isEmpty(), "Cart should be empty");
         Assert.assertTrue(getDriver().findElement(By.className("cart_list")).isDisplayed(), "Cart list should still be visible");
@@ -42,6 +43,12 @@ public class CartTest extends BaseTest {
 
     @Test
     public void testCartItemDetails() {
+        LoginPage loginPage = new LoginPage(getDriver());
+        loginPage.navigateTo();
+        InventoryPage inventoryPage = loginPage.login("standard_user", "secret_sauce");
+        inventoryPage.addProductToCart(0);
+        CartPage cartPage = inventoryPage.navigateToCart();
+
         String itemName = cartPage.getItemName(0);
         double itemPrice = cartPage.getItemPrice(0);
         int quantity = cartPage.getItemQuantity(0);
@@ -57,6 +64,12 @@ public class CartTest extends BaseTest {
 
     @Test
     public void testProceedToCheckout() {
+        LoginPage loginPage = new LoginPage(getDriver());
+        loginPage.navigateTo();
+        InventoryPage inventoryPage = loginPage.login("standard_user", "secret_sauce");
+        inventoryPage.addProductToCart(0);
+        CartPage cartPage = inventoryPage.navigateToCart();
+
         cartPage.proceedToCheckout();
         Assert.assertTrue(getDriver().getCurrentUrl().contains("checkout-step-one.html"), "Not navigated to checkout page");
     }

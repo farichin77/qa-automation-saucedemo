@@ -35,17 +35,12 @@ public class CartPage extends BasePage {
     }
 
     public int getNumberOfItems() {
-        try {
-            // Wait for cart items or empty cart
-            wait.until(ExpectedConditions.or(
-                ExpectedConditions.presenceOfElementLocated(By.cssSelector(".cart_item")),
-                ExpectedConditions.presenceOfElementLocated(By.cssSelector(".cart_list"))
-            ));
-            return getDriver().findElements(By.cssSelector(".cart_item")).size();
-        } catch (Exception e) {
-            // If no items found, return 0
-            return 0;
-        }
+        // Tunggu cart item atau cart list muncul
+        wait.until(ExpectedConditions.or(
+            ExpectedConditions.presenceOfElementLocated(By.cssSelector(".cart_item")),
+            ExpectedConditions.presenceOfElementLocated(By.cssSelector(".cart_list"))
+        ));
+        return getDriver().findElements(By.cssSelector(".cart_item")).size();
     }
 
     public String getItemName(int index) {
@@ -66,33 +61,31 @@ public class CartPage extends BasePage {
 
     public int getItemQuantity(int index) {
         if (index >= 0 && index < itemQuantities.size()) {
+            wait.until(ExpectedConditions.visibilityOf(itemQuantities.get(index)));
             return Integer.parseInt(itemQuantities.get(index).getText());
         }
         return 0;
     }
 
     public void removeItem(int index) {
-        // Wait for cart items to be present
         wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector(".cart_item")));
-        
-        // Get all remove buttons that are currently visible
         List<WebElement> buttons = getDriver().findElements(By.cssSelector("button[id^='remove-']"));
-        
         if (index >= 0 && index < buttons.size()) {
             WebElement buttonToClick = buttons.get(index);
-            // Wait specifically for this button to be clickable
+            wait.until(ExpectedConditions.visibilityOf(buttonToClick));
             wait.until(ExpectedConditions.elementToBeClickable(buttonToClick));
-            // Store item ID before removing
             String itemId = buttonToClick.getAttribute("id");
             buttonToClick.click();
-            // Wait for specific item to be removed using its ID
             wait.until(ExpectedConditions.invisibilityOfElementLocated(By.id(itemId)));
         }
     }
 
     public CheckoutPage proceedToCheckout() {
-        wait.until(ExpectedConditions.elementToBeClickable(checkoutButton)).click();
-        wait.until(ExpectedConditions.urlContains("checkout-step-one.html"));
-        return new CheckoutPage(driver);
+    wait.until(ExpectedConditions.visibilityOf(checkoutButton));
+    wait.until(ExpectedConditions.elementToBeClickable(checkoutButton));
+    checkoutButton.click();
+    // Tunggu url checkout dan halaman siap
+    wait.until(ExpectedConditions.urlContains("checkout-step-one.html"));
+    return new CheckoutPage(driver);
     }
 }

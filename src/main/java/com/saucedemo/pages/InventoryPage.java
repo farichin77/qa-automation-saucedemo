@@ -7,10 +7,12 @@ import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+
 import java.time.Duration;
 import java.util.List;
 
 public class InventoryPage extends BasePage {
+
     @FindBy(css = ".inventory_item")
     private List<WebElement> inventoryItems;
 
@@ -26,8 +28,8 @@ public class InventoryPage extends BasePage {
     @FindBy(css = ".inventory_item_price")
     private List<WebElement> itemPrices;
 
-    @FindBy(css = "button[data-test^='add-to-cart']")
-    private List<WebElement> addToCartButtons;
+    @FindBy(css = "button[data-test^='add-to-cart'], button[data-test^='remove']")
+    private List<WebElement> cartButtons;
 
     @FindBy(css = "#react-burger-menu-btn")
     private WebElement menuButton;
@@ -38,6 +40,10 @@ public class InventoryPage extends BasePage {
     public InventoryPage(WebDriver driver) {
         super(driver);
         PageFactory.initElements(driver, this);
+
+        // Pastikan sudah di halaman inventory
+        wait.until(ExpectedConditions.urlContains("inventory"));
+        wait.until(ExpectedConditions.visibilityOfAllElements(inventoryItems));
     }
 
     public int getNumberOfProducts() {
@@ -45,10 +51,35 @@ public class InventoryPage extends BasePage {
     }
 
     public void addProductToCart(int index) {
-        wait.until(ExpectedConditions.visibilityOfAllElements(addToCartButtons));
-        if (index >= 0 && index < addToCartButtons.size()) {
-            wait.until(ExpectedConditions.elementToBeClickable(addToCartButtons.get(index))).click();
+        if (index < 0 || index >= inventoryItems.size()) {
+            throw new IndexOutOfBoundsException("Invalid product index: " + index);
         }
+
+        WebElement item = inventoryItems.get(index);
+        scrollIntoView(item);
+
+        WebElement addButton = item.findElement(By.cssSelector("button[data-test^='add-to-cart'], button[data-test^='remove']"));
+
+        wait.until(ExpectedConditions.elementToBeClickable(addButton));
+        clickWithRetry(addButton);
+
+        // Tunggu sampai berubah ke "Remove" atau badge muncul
+        WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofSeconds(8));
+        shortWait.until(ExpectedConditions.or(
+                ExpectedConditions.attributeContains(addButton, "data-test", "remove"),
+                ExpectedConditions.presenceOfElementLocated(By.cssSelector(".shopping_cart_badge"))
+        ));
+    }
+
+    // ✅ Tambahan untuk verifikasi tombol sudah berubah jadi "Remove"
+    public boolean isProductInCart(int index) {
+        if (index < 0 || index >= inventoryItems.size()) {
+            throw new IndexOutOfBoundsException("Invalid product index: " + index);
+        }
+
+        WebElement item = inventoryItems.get(index);
+        WebElement button = item.findElement(By.cssSelector("button[data-test^='add-to-cart'], button[data-test^='remove']"));
+        return button.getText().equalsIgnoreCase("Remove");
     }
 
     public String getProductName(int index) {
@@ -67,28 +98,30 @@ public class InventoryPage extends BasePage {
     }
 
     public CartPage navigateToCart() {
-        wait.until(ExpectedConditions.elementToBeClickable(cartLink)).click();
+        wait.until(ExpectedConditions.elementToBeClickable(cartLink));
+        clickWithRetry(cartLink);
+
         wait.until(ExpectedConditions.urlContains("cart.html"));
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector(".cart_list")));
+
         return new CartPage(driver);
     }
 
     public void openMenu() {
-        menuButton.click();
+        clickWithRetry(menuButton);
     }
 
     public LoginPage logout() {
-        wait.until(ExpectedConditions.elementToBeClickable(menuButton)).click();
-        // Wait for menu to slide out and become visible
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("bm-menu-wrap")));
-        // Additional wait for menu animation
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        wait.until(ExpectedConditions.elementToBeClickable(logoutLink)).click();
-        // Wait for redirect to login page
-        wait.until(ExpectedConditions.urlContains("/"));
+        openMenu();
+        // Wait for the sidebar to be visible
+        WebElement menuContainer = wait.until(ExpectedConditions.visibilityOfElementLocated(
+            By.className("bm-menu-wrap")
+        ));
+        // Wait for the logout link to be visible and clickable
+        wait.until(ExpectedConditions.elementToBeClickable(logoutLink));
+        clickWithRetry(logoutLink);
+        // Wait for the login page to load
+        wait.until(ExpectedConditions.urlContains("saucedemo.com"));
         return new LoginPage(driver);
     }
 }

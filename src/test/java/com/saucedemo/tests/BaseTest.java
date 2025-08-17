@@ -2,6 +2,7 @@ package com.saucedemo.tests;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 import io.qameta.allure.Attachment;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.PageLoadStrategy;
 import org.openqa.selenium.TakesScreenshot;
@@ -26,28 +27,37 @@ public class BaseTest {
 
     @BeforeSuite
     public void setUpSuite() {
-        WebDriverManager.chromedriver().setup();
+        System.out.println("Setting up specific ChromeDriver version 139...");
+        WebDriverManager.chromedriver().driverVersion("139").setup();
+        System.out.println("WebDriver setup complete.");
     }
 
     @BeforeMethod
     public void setUp() {
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--remote-allow-origins=*");
-        options.addArguments("--disable-gpu");
-        options.addArguments("--no-sandbox");
-        options.addArguments("--disable-dev-shm-usage");
-        options.addArguments("--disable-notifications");
-        options.addArguments("--disable-extensions");
-        options.setPageLoadStrategy(PageLoadStrategy.NORMAL);
+        try {
+            ChromeOptions options = new ChromeOptions();
+            options.addArguments("--start-maximized");
+            options.addArguments("--ignore-certificate-errors");
+            options.setPageLoadStrategy(PageLoadStrategy.NORMAL);
+            options.setCapability("se:bidi", false); // Disable BiDi protocol
 
-        driver.set(new ChromeDriver(options));
-        getDriver().manage().window().maximize();
-        getDriver().manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-        getDriver().manage().timeouts().pageLoadTimeout(Duration.ofSeconds(30));
+            WebDriver webDriver = new ChromeDriver(options);
+            driver.set(webDriver);
 
-        wait = new WebDriverWait(getDriver(), Duration.ofSeconds(15));
+            // Set timeouts
+            webDriver.manage().timeouts().implicitlyWait(Duration.ofSeconds(5));
+            webDriver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(30));
+            webDriver.manage().timeouts().scriptTimeout(Duration.ofSeconds(30));
 
-        getDriver().get(BASE_URL);
+            // Explicit wait
+            wait = new WebDriverWait(webDriver, Duration.ofSeconds(30));
+
+            // Langsung buka base URL
+            webDriver.get(BASE_URL);
+        } catch (Exception e) {
+            System.out.println("[ERROR] Failed to initialize WebDriver: " + e.getMessage());
+            throw e;
+        }
     }
 
     @AfterMethod
@@ -55,7 +65,6 @@ public class BaseTest {
         if (result.getStatus() == ITestResult.FAILURE) {
             saveScreenshot();
         }
-
         if (getDriver() != null) {
             getDriver().quit();
             driver.remove();
