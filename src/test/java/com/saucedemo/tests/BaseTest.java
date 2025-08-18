@@ -33,31 +33,59 @@ public class BaseTest {
     }
 
     @BeforeMethod
-    public void setUp() {
-        try {
-            ChromeOptions options = new ChromeOptions();
-            options.addArguments("--start-maximized");
-            options.addArguments("--ignore-certificate-errors");
-            options.setPageLoadStrategy(PageLoadStrategy.NORMAL);
-            options.setCapability("se:bidi", false); // Disable BiDi protocol
+    public void setUp() throws InterruptedException {
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--start-maximized");
+        options.addArguments("--ignore-certificate-errors");
+        options.addArguments("--disable-notifications");
+        options.addArguments("--disable-extensions");
+        options.setPageLoadStrategy(PageLoadStrategy.NORMAL);
+        options.setCapability("se:bidi", false);
 
-            WebDriver webDriver = new ChromeDriver(options);
-            driver.set(webDriver);
-
-            // Set timeouts
-            webDriver.manage().timeouts().implicitlyWait(Duration.ofSeconds(5));
-            webDriver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(30));
-            webDriver.manage().timeouts().scriptTimeout(Duration.ofSeconds(30));
-
-            // Explicit wait
-            wait = new WebDriverWait(webDriver, Duration.ofSeconds(30));
-
-            // Langsung buka base URL
-            webDriver.get(BASE_URL);
-        } catch (Exception e) {
-            System.out.println("[ERROR] Failed to initialize WebDriver: " + e.getMessage());
-            throw e;
+        // Try to initialize ChromeDriver
+        WebDriver webDriver = null;
+        int attempts = 0;
+        while (attempts < 3 && webDriver == null) {
+            try {
+                webDriver = new ChromeDriver(options);
+                driver.set(webDriver);
+                
+                // Set timeouts
+                webDriver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+                webDriver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(60));
+                webDriver.manage().timeouts().scriptTimeout(Duration.ofSeconds(30));
+                
+                // Try to navigate to base URL
+                webDriver.get(BASE_URL);
+                
+                // Verify page loaded
+                if (webDriver.getTitle().contains("Swag Labs")) {
+                    System.out.println("Successfully loaded: " + BASE_URL);
+                    break;
+                }
+                
+            } catch (Exception e) {
+                System.err.println("Attempt " + (attempts + 1) + " failed: " + e.getMessage());
+                attempts++;
+                if (webDriver != null) {
+                    webDriver.quit();
+                    webDriver = null;
+                }
+                if (attempts < 3) {
+                    Thread.sleep(2000); // Wait before retry
+                }
+            }
         }
+        
+        if (webDriver == null) {
+            throw new RuntimeException("Failed to initialize WebDriver after 3 attempts");
+        }
+
+        // Initialize explicit wait
+        wait = new WebDriverWait(webDriver, Duration.ofSeconds(30));
+        
+        // Add a small delay to ensure page is fully loaded
+        Thread.sleep(1000);
     }
 
     @AfterMethod

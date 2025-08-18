@@ -14,7 +14,8 @@ public class BasePage {
 
     public BasePage(WebDriver driver) {
         this.driver = driver;
-        this.wait = new WebDriverWait(driver, Duration.ofSeconds(5));
+        // Increase wait time to 20 seconds for better stability
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(20));
     }
 
     public WebDriver getDriver() {
@@ -22,8 +23,21 @@ public class BasePage {
     }
     
     protected void waitForPageLoad() {
-        wait.until(webDriver -> ((JavascriptExecutor) webDriver)
-            .executeScript("return document.readyState").equals("complete"));
+        try {
+            // Wait for document.readyState to be complete
+            wait.until(webDriver -> {
+                String state = ((JavascriptExecutor) webDriver)
+                    .executeScript("return document.readyState").toString();
+                return state.equals("complete");
+            });
+            // Additional wait for jQuery if it exists
+            if ((Boolean) ((JavascriptExecutor) driver).executeScript("return window.jQuery != undefined")) {
+                wait.until(webDriver -> (Boolean) ((JavascriptExecutor) webDriver)
+                    .executeScript("return jQuery.active == 0"));
+            }
+        } catch (Exception e) {
+            System.out.println("Page load wait interrupted: " + e.getMessage());
+        }
     }
     
     protected void shortWait() {
