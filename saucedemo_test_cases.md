@@ -1,4 +1,4 @@
-# 🧪 Test Case SauceDemo (19 Cases with Priority)
+# 🧪 Test Case SauceDemo (20 Cases with Priority)
 
 ## 1. Login (5 Test Case)
 
