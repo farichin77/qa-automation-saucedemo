@@ -13,7 +13,7 @@ import io.qameta.allure.Description;
 public class LoginTest extends BaseTest {
 
     @Test
-    @Story("Successful Login")
+    @Story("SucessfullLogin")
     @Description("Verify that user can successfully login with valid credentials")
     @Severity(SeverityLevel.BLOCKER)
     public void testSuccessfulLogin() {

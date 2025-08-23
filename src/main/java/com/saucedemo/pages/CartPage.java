@@ -80,12 +80,17 @@ public class CartPage extends BasePage {
         }
     }
 
+    public boolean isCheckoutButtonEnabled() {
+        wait.until(ExpectedConditions.visibilityOf(checkoutButton));
+        return checkoutButton.isEnabled();
+    }
+    
     public CheckoutPage proceedToCheckout() {
-    wait.until(ExpectedConditions.visibilityOf(checkoutButton));
-    wait.until(ExpectedConditions.elementToBeClickable(checkoutButton));
-    checkoutButton.click();
-    // Tunggu url checkout dan halaman siap
-    wait.until(ExpectedConditions.urlContains("checkout-step-one.html"));
-    return new CheckoutPage(driver);
+        wait.until(ExpectedConditions.visibilityOf(checkoutButton));
+        wait.until(ExpectedConditions.elementToBeClickable(checkoutButton));
+        checkoutButton.click();
+        // Tunggu url checkout dan halaman siap
+        wait.until(ExpectedConditions.urlContains("checkout-step-one.html"));
+        return new CheckoutPage(driver);
     }
 }

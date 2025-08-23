@@ -8,6 +8,7 @@ import org.openqa.selenium.By;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import java.util.List;
 
 public class CheckoutTest extends BaseTest {
 
@@ -43,6 +44,56 @@ public class CheckoutTest extends BaseTest {
         Assert.assertTrue(errorMessage.contains("First Name is required"), "Wrong error message for empty first name");
         Assert.assertTrue(getDriver().getCurrentUrl().contains("checkout-step-one.html"), "Should stay on checkout step one");
         Assert.assertTrue(getDriver().findElement(By.cssSelector("[data-test='error']")).isDisplayed(), "Error message should be visible");
+    }
+
+    @Test
+    public void testCheckoutWithEmptyCart() {
+        // Handle any unexpected popups first
+        handleUnexpectedPopups();
+        // Login
+        LoginPage loginPage = new LoginPage(getDriver());
+        loginPage.navigateTo();
+        InventoryPage inventoryPage = loginPage.login("standard_user", "secret_sauce");
+        
+        // Navigate to cart without adding any products
+        CartPage cartPage = inventoryPage.navigateToCart();
+        
+        // Verify cart is empty
+        int itemCount = cartPage.getNumberOfItems();
+        System.out.println("Number of items in cart: " + itemCount);
+        Assert.assertEquals(itemCount, 0, "Cart should be empty");
+        
+        // Verify checkout button is disabled when cart is empty
+        boolean isCheckoutEnabled = cartPage.isCheckoutButtonEnabled();
+        System.out.println("Is checkout button enabled? " + isCheckoutEnabled);
+        
+        // Check if the application behaves as expected
+        if (isCheckoutEnabled) {
+            // Actual behavior (incorrect): Button is enabled
+            System.out.println("ISSUE DITEMUKAN: Tombol checkout seharusnya dinonaktifkan saat keranjang kosong");
+            
+            // Try to proceed to checkout (should not be possible)
+            try {
+                cartPage.proceedToCheckout();
+                System.out.println("PERINGATAN: Aplikasi mengizinkan checkout dengan keranjang kosong");
+                
+                // Verify we're on the checkout page (should not happen)
+                Assert.assertFalse(
+                    getDriver().getCurrentUrl().contains("checkout-step-one.html"),
+                    "Seharusnya tidak bisa masuk ke halaman checkout dengan keranjang kosong"
+                );
+                
+            } catch (Exception e) {
+                // Expected: Should throw exception when trying to proceed with empty cart
+                System.out.println("Aplikasi berhasil mencegah checkout dengan keranjang kosong: " + e.getMessage());
+            }
+        } else {
+            // Expected behavior: Button is disabled
+            System.out.println("PERILAKU YANG DIHARAPKAN: Tombol checkout dinonaktifkan saat keranjang kosong");
+        }
+        
+        // Verify the test result
+        Assert.assertFalse(isCheckoutEnabled, "Tombol checkout harus dinonaktifkan saat keranjang kosong");
     }
 
     @Test

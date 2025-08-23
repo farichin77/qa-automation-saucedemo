@@ -8,13 +8,9 @@ import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.io.File;
 import java.time.Duration;
 import java.util.List;
-import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.OutputType;
-import org.openqa.selenium.TakesScreenshot;
 
 public class InventoryPage extends BasePage {
 
@@ -86,9 +82,6 @@ public class InventoryPage extends BasePage {
             System.out.println("Button found. Current state - Text: '" + addButton.getText().trim() + "', " +
                     "Data-test: " + addButton.getAttribute("data-test"));
                     
-            // Take screenshot before any action
-            takeScreenshot("before_add_to_cart_" + index);
-
             // Wait for button to be clickable
             addButton = wait.until(ExpectedConditions.elementToBeClickable(addButton));
             
@@ -99,7 +92,6 @@ public class InventoryPage extends BasePage {
             // If already in cart, remove it first to ensure clean state
             if (buttonText.equalsIgnoreCase("remove") || (buttonTestAttr != null && buttonTestAttr.contains("remove"))) {
                 System.out.println("Item already in cart. Removing it first...");
-                takeScreenshot("before_remove_item_" + index);
                 clickWithRetry(addButton);
                 
                 // Wait for button to change back to ADD state
@@ -119,7 +111,6 @@ public class InventoryPage extends BasePage {
                                     text + "', Data-test: " + testAttr);
                         } else {
                             System.out.println("Button successfully changed to ADD state");
-                            takeScreenshot("after_remove_item_" + index);
                         }
                         return isAdd;
                     } catch (Exception e) {
@@ -143,7 +134,6 @@ public class InventoryPage extends BasePage {
             // Refresh button reference before clicking
             addButton = item.findElement(buttonLocator);
             System.out.println("Clicking 'Add to cart' button...");
-            takeScreenshot("before_click_add_to_cart_" + index);
             
             try {
                 // Try with regular click first
@@ -156,7 +146,6 @@ public class InventoryPage extends BasePage {
             }
             
             System.out.println("Button clicked. Waiting for state change...");
-            takeScreenshot("after_click_add_to_cart_" + index);
 
             // Wait for button to change to REMOVE state with more robust checks
             WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofSeconds(20));
@@ -177,13 +166,11 @@ public class InventoryPage extends BasePage {
                         
                         if (isRemoveState) {
                             System.out.println("Button successfully changed to REMOVE state");
-                            takeScreenshot("after_add_to_cart_success_" + index);
                         }
                         
                         return isRemoveState;
                     } catch (Exception e) {
                         System.out.println("Error checking button state: " + e.getMessage());
-                        takeScreenshot("error_checking_button_state_" + System.currentTimeMillis());
                         return false;
                     }
                 });
@@ -196,7 +183,6 @@ public class InventoryPage extends BasePage {
                 
             } catch (Exception e) {
                 System.out.println("Error waiting for button state change: " + e.getMessage());
-                takeScreenshot("button_state_error_" + System.currentTimeMillis());
                 throw e;
             }
 
@@ -205,16 +191,12 @@ public class InventoryPage extends BasePage {
             try {
                 waitForCartBadge();
                 System.out.println("Cart badge updated successfully");
-                takeScreenshot("cart_badge_updated_" + index);
             } catch (Exception e) {
                 System.out.println("Error waiting for cart badge: " + e.getMessage());
-                takeScreenshot("error_waiting_for_cart_badge_" + System.currentTimeMillis());
                 throw e;
             }
             
         } catch (Exception e) {
-            // Take screenshot for debugging
-            takeScreenshot("add_to_cart_error_" + System.currentTimeMillis());
             throw new RuntimeException("Failed to add product to cart: " + e.getMessage(), e);
         }
     }
@@ -266,8 +248,6 @@ public class InventoryPage extends BasePage {
             // If badge is not found, it might be because the cart is empty
             // which is fine if we're just removing items
             System.out.println("Cart badge not found, cart might be empty: " + e.getMessage());
-            // Take a screenshot to help with debugging
-            takeScreenshot("cart_badge_not_found_" + System.currentTimeMillis());
         }
     }
 
@@ -288,18 +268,6 @@ public class InventoryPage extends BasePage {
             return new CartPage(driver);
         } catch (Exception e) {
             throw new RuntimeException("Failed to navigate to cart: " + e.getMessage(), e);
-        }
-    }
-
-    private void takeScreenshot(String fileName) {
-        try {
-            File screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-            File destFile = new File("screenshots/" + fileName + ".png");
-            FileUtils.forceMkdirParent(destFile);
-            FileUtils.copyFile(screenshot, destFile);
-            System.out.println("Screenshot saved to: " + destFile.getAbsolutePath());
-        } catch (Exception e) {
-            System.err.println("Failed to take screenshot: " + e.getMessage());
         }
     }
 
